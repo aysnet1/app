@@ -3,12 +3,12 @@
 
 <head>
   <meta charset="utf-8" />
-  <title>احتراق الشمعة</title>
+  <title>ماء الجير</title>
   <script src="https://zimjs.org/cdn/1.3.2/createjs.js"></script>
   <script src="js/zim.js"></script>
   <script src="https://d309knd7es5f10.cloudfront.net/pizzazz_03.js"></script>
   <script>
-    var assets = ["table.png", "flam.png", "flam.json", "bougi.png", "plate.png", "lighter.png", "raf.png","lighter.mp3","fl.png"];
+    var assets = ["plate.png", "table.png", "flam.png", "flam.json", "bougi.png", "tube.png", "lighter.png", "raf.png", "lighter.mp3", "fl.png", "vapeur.png", "vapeur.json", "tube.png", "flasek.png", "flasek.json"];
     var path = "assets/";
     var pattern = pizzazz.makePattern({
       type: "slants",
@@ -22,21 +22,15 @@
       barType: "Rectangle",
       color: "dark",
       foregroundColor: 'yellow',
-
       backing: pattern,
-
       percentage: true,
-
     });
     const frame = new Frame("fit", 1024, 768, white, 'rgb(177, 177, 177)', assets, path, bar);
     frame.on("ready", () => {
       const stage = frame.stage;
       let stageW = frame.width;
       let stageH = frame.height;
-
-
-      // table ...
-      frame.asset("raf.png").addTo().pos(600, 200).sca(2, 1.5)
+      raf = frame.asset("raf.png").addTo().pos(400, 200).sca(3, 1.5)
 
       table = new Container().center(stage).pos(500, 600);
 
@@ -44,10 +38,24 @@
       plate = new Container().setBounds(0, 0, 301, 176).centerReg().rot(180).drag({
         currentTarget: true,
         onTop: false
-      }).sca(0.8)
+      }).sca(0.4)
+      tube = new Container().setBounds(0, 0, 301, 176).centerReg().drag({
+        currentTarget: true,
+        onTop: false
+      });
+      tube.y = 151;
+      tube.x = 810;
+
       frame.asset('plate.png').centerReg(plate)
-      bougi = new Container().setBounds(0, 0, 100, 100).centerReg().sca(1);
-      bougi.x=491;bougi.y=372;
+      frame.asset('tube.png').centerReg(tube);
+      r_tube = new Rectangle(50, 50, '#ffffff05').addTo(tube).pos(tube.width - 50 / 2, tube.height)
+      tube.sca(0.5).rot(180);
+      bougi = new Container().setBounds(0, 0, 100, 100).centerReg().sca(0.9, 0.7).drag({
+        currentTarget: true,
+        onTop: false
+      });
+      bougi.x = 255;
+      bougi.y = 404;
       img_bougi = frame.asset("bougi.png").centerReg(bougi).sca(0.9);
       flam = new Sprite({
         json: frame.asset("flam.json")
@@ -59,8 +67,18 @@
       hit.centerReg(bougi)
       hit.x = 50;
       hit.y = -50;
-
-
+      fla = new Container().setBounds(0, 0, 150, 250).centerReg().sca(0.5).drag({
+        currentTarget: true,
+        onTop: false
+      });
+      flasek = new Sprite({
+        json: frame.asset("flasek.json")
+      }).centerReg(fla).sca(1.2).alp(1);
+      fla.x = 954;
+      fla.y = 170
+      vapeur = new Sprite({
+        json: frame.asset("vapeur.json")
+      }).centerReg(fla).sca(1).alp(0).pos(-30, 130);
 
 
       lighter = new Container().setBounds(0, 0, 80, 300).centerReg().sca(1).drag({
@@ -69,9 +87,9 @@
       });
       frame.asset("lighter.png").addTo().sca(0.4).centerReg(lighter)
       hit_l = new Circle(25, '#ffffff05');
-      plate.x = 870;
-      plate.y = 135;
-      fl = frame.asset("fl.png").addTo(lighter).sca(0.4).pos(40,17).alp(0.01)
+      plate.x = 570;
+      plate.y = 185;
+      fl = frame.asset("fl.png").addTo(lighter).sca(0.4).pos(40, 17).alp(0.01)
       co2 = new Rectangle(100, 100, black).centerReg(plate).drag();
       loop(11, function(i) {
         new Circle(10).addTo(co2).pos(null, (i - 1) * 10);
@@ -85,7 +103,6 @@
 
 
       co2.alp(0.01)
-      //  plate.regY=0;
       lighter.x = 690;
       lighter.y = 131;
       lighter.startX = 690;
@@ -95,7 +112,7 @@
       hit_l.y = 30;
 
       // lighter.rot(-90);
-    sound_l = frame.asset("lighter.mp3");
+      sound_l = frame.asset("lighter.mp3");
 
       lighter.on("pressup", function(e) {
         lighter.animate({
@@ -104,32 +121,24 @@
           y: lighter.startY
         }, 200);
       });
-      plate.on("pressup", function(e) {
 
-        plate.animate({
-          x: 237,
-          y: 223
-        }, 200);
-          co2.stopAnimate()
-      });
       lighter.on("mousedown", function(e) {
         sound_l.play();
         fl.animate({
-          props:{
-           alpha:0.5
-         },
-          wait:600,
-         time:1000,
-         events:true
+          props: {
+            alpha: 0.5
+          },
+          wait: 600,
+          time: 1000,
 
-   })
-  });
+        })
+      });
       lighter.on("pressup", function(e) {
-      //  sound_l.play();
+        //  sound_l.play();
         fl.animate({
-          alpha:0
+          alpha: 0
 
-        },100)
+        }, 200)
 
       });
 
@@ -151,9 +160,87 @@
         }
 
       });
-      plate.on("pressmove", function(e) {
 
-        if (co2.hitTestCircle(hit) && flam.paused!=true) {
+      tube.on("pressmove", function(e) {
+        tube.sca(1).rot(0);
+        vapeur.stop();
+        vapeur.alp(0);
+
+        a=true
+      });
+      tube.on("pressup", function(e) {
+        if (fla.x == 548 && r_tube.hitTestBounds(fla)) {
+          tube.animate({
+            x: 340,
+            y: 253
+          }, 200);
+        } else {
+          tube.animate({
+            scaleX: 0.5,
+            scaleY: 0.5,
+            rotation: 180,
+            x: 810,
+            y: 151
+          }, 200);
+          vapeur.stop();
+          vapeur.alp(0);
+
+          a=true;
+        }
+
+      });
+      fla.on("pressup", function(e) {
+        if (fla.hitTestBounds(table)) {
+          fla.animate({
+            x: 548,
+            y: 354
+          }, 200);
+        } else {
+          fla.animate({
+            scaleX: 0.5,
+            scaleY: 0.5,
+            x: 954,
+            y: 171
+          }, 200);
+          vapeur.stop()
+          vapeur.alp(0);
+          flasek.gotoAndStop();
+          a= true;
+        }
+
+      });
+      fla.on("pressmove", function(e) {
+        fla.sca(1).rot(0)
+        vapeur.stop();
+        vapeur.alp(0);
+
+        a = true;
+
+      });
+      var a = true;
+      Ticker.add(() => {
+        if (fla.x == 548 && tube.x == 340 && flam.paused != true && a == true) {
+          zog('4')
+          flasek.run({
+            time: 30000
+          });
+          vapeur.animate({
+            props: {
+              alpha: 1
+            },
+            wait: 5000,
+            time: 10000,
+            events: true
+          })
+          a = false;
+        // fla.noDrag();tube.noDrag()
+        }
+
+      });
+      plate.on("pressmove", function(e) {
+        plate.sca(0.8)
+
+        if (co2.hitTestCircle(hit) && flam.paused != true) {
           zog('ok')
           co2.animate({
             alpha: 1
@@ -162,8 +249,30 @@
         }
 
       });
-       new Label('نقوم بسحق اللهب بصحن أبيض اللون. فماذا نلاحظ؟',30).addTo().pos(40,60)
+      plate.on("pressup", function(e) {
+        if (plate.hitTestBounds(raf)) {
+          plate.animate({
+            x: 570,
+            y: 185
+          }, 200);
+          co2.alp(0.01);
+          plate.sca(0.4)
+        } else {
+          plate.animate({
+            x: 237,
+            y: 223
+          }, 200);
+          co2.stopAnimate()
+        }
+      });
+
+
+      txt = 'صحن'
+      new Label('ماء الجير', 15).centerReg(fla).pos(-30, 200)
+      new Label(txt, 23).addTo().pos(535, 100);
+
       stage.update();
+
     });
   </script>
   <meta name="viewport" content="width=device-width, user-scalable=no" />

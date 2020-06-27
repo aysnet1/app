@@ -1,0 +1,174 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>احتراق الشمعة</title>
+  <script src="https://zimjs.org/cdn/1.3.2/createjs.js"></script>
+  <script src="js/zim.js"></script>
+  <script src="https://d309knd7es5f10.cloudfront.net/pizzazz_03.js"></script>
+  <script>
+    var assets = ["table.png", "flam.png", "flam.json", "bougi.png", "plate.png", "lighter.png", "raf.png","lighter.mp3","fl.png"];
+    var path = "assets/";
+    var pattern = pizzazz.makePattern({
+      type: "slants",
+      colors: makeSeries(["purple", "grey"]),
+      size: 5,
+      rows: 20,
+      cols: 60,
+      interval: 500
+    });
+    var bar = new ProgressBar({
+      barType: "Rectangle",
+      color: "dark",
+      foregroundColor: 'yellow',
+
+      backing: pattern,
+
+      percentage: true,
+
+    });
+    const frame = new Frame("fit", 1024, 768, white, 'rgb(177, 177, 177)', assets, path, bar);
+    frame.on("ready", () => {
+      const stage = frame.stage;
+      let stageW = frame.width;
+      let stageH = frame.height;
+
+
+      // table ...
+      frame.asset("raf.png").addTo().pos(600, 200).sca(2, 1.5)
+
+      table = new Container().center(stage).pos(500, 600);
+
+      img = frame.asset("table.png").centerReg(table).sca(1.8, 1.3)
+      plate = new Container().setBounds(0, 0, 301, 176).centerReg().rot(180).drag({
+        currentTarget: true,
+        onTop: false
+      }).sca(0.8)
+      frame.asset('plate.png').centerReg(plate)
+      bougi = new Container().setBounds(0, 0, 100, 100).centerReg().sca(1);
+      bougi.x=491;bougi.y=372;
+      img_bougi = frame.asset("bougi.png").centerReg(bougi).sca(0.9);
+      flam = new Sprite({
+        json: frame.asset("flam.json")
+      }).centerReg(bougi).sca(0.4).alp(0);
+      flam.x = 60;
+      flam.y = -37;
+      hit = new Circle(25, '#ffffff05');
+
+      hit.centerReg(bougi)
+      hit.x = 50;
+      hit.y = -50;
+
+
+
+
+      lighter = new Container().setBounds(0, 0, 80, 300).centerReg().sca(1).drag({
+        currentTarget: true,
+        onTop: false
+      });
+      frame.asset("lighter.png").addTo().sca(0.4).centerReg(lighter)
+      hit_l = new Circle(25, '#ffffff05');
+      plate.x = 870;
+      plate.y = 135;
+      fl = frame.asset("fl.png").addTo(lighter).sca(0.4).pos(40,17).alp(0.01)
+      co2 = new Rectangle(100, 100, black).centerReg(plate).drag();
+      loop(11, function(i) {
+        new Circle(10).addTo(co2).pos(null, (i - 1) * 10);
+        new Circle(10).addTo(co2).pos(100, (i - 1) * 10);
+
+        new Circle(10).addTo(co2).pos((i - 1) * 10, null)
+        new Circle(10).addTo(co2).pos((i - 1) * 10, 100)
+      })
+
+
+
+
+      co2.alp(0.01)
+      //  plate.regY=0;
+      lighter.x = 690;
+      lighter.y = 131;
+      lighter.startX = 690;
+      lighter.startY = 131;
+      hit_l.centerReg(lighter)
+      hit_l.x = 50;
+      hit_l.y = 30;
+
+      // lighter.rot(-90);
+    sound_l = frame.asset("lighter.mp3");
+
+      lighter.on("pressup", function(e) {
+        lighter.animate({
+          rotation: 0,
+          x: lighter.startX,
+          y: lighter.startY
+        }, 200);
+      });
+      plate.on("pressup", function(e) {
+
+        plate.animate({
+          x: 237,
+          y: 223
+        }, 200);
+          co2.stopAnimate()
+      });
+      lighter.on("mousedown", function(e) {
+        sound_l.play();
+        fl.animate({
+          props:{
+           alpha:0.5
+         },
+          wait:600,
+         time:1000,
+         events:true
+
+   })
+  });
+      lighter.on("pressup", function(e) {
+      //  sound_l.play();
+        fl.animate({
+          alpha:0
+
+        },100)
+
+      });
+
+      lighter.on("pressmove", function(e) {
+
+        if (hit_l.hitTestCircle(hit)) {
+
+          flam.animate({
+            alpha: 0.8
+          }, 100);
+
+          lighter.animate({
+            rotation: -90
+          }, 200);
+        } else {
+          lighter.animate({
+            rotation: -90
+          }, 200);
+        }
+
+      });
+      plate.on("pressmove", function(e) {
+
+        if (co2.hitTestCircle(hit) && flam.paused!=true) {
+          zog('ok')
+          co2.animate({
+            alpha: 1
+          }, 6000);
+
+        }
+
+      });
+       new Label('نقوم بسحق اللهب بصحن أبيض اللون. فماذا نلاحظ؟',30).addTo().pos(40,60)
+      stage.update();
+    });
+  </script>
+  <meta name="viewport" content="width=device-width, user-scalable=no" />
+</head>
+
+<body></body>
+
+</html>
